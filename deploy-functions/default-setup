@@ -1,0 +1,46 @@
+#!/bin/bash
+# shellcheck disable=SC2034
+
+# TO DO
+# manage output for interactive and non-interactive modes
+# shellcheck disable=SC1090
+
+df_ver=1.12
+lib_path='/usr/local/include/osshelp/deploy-functions.sh'
+log_file='/var/log/default-setup.log'
+local_ds='/usr/local/osshelp/default-setup.local'
+non_interactive_mode=$(tty -s; echo ${?})
+
+  test -r "${lib_path}" || { echo "Library ${lib_path} doesn't exist!"; exit 1; }
+  test -r "${lib_path}" && . "${lib_path}" "${@}"
+
+function main() {
+  check_required_tools
+  prepare_vars
+  setup_conf_backup
+  setup_default_varlog
+  prepare_config
+  setup_custom_varlog
+  manage_users
+  setup_upstart
+  setup_systemd
+  setup_ssh
+  setup_cron
+  setup_nginx
+  setup_apache
+  setup_phpfpm
+  setup_mysql
+  setup_postfix
+  setup_ssmtp
+  setup_monit
+  setup_netdata
+  setup_hlreport
+  setup_consul
+  declare_profile_name
+  test -r "${local_ds}" && . "${local_ds}"
+}
+
+test "${non_interactive_mode}" == 0 && main
+test "${non_interactive_mode}" == 1 && {
+  main 2>&1 | tee "${log_file}" > /dev/null # tee used here for fix, see https://oss.help/58130
+}

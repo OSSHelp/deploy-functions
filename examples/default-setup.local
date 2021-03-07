@@ -1,0 +1,28 @@
+## Available variables:
+##   container_name
+##   server_name
+##   profile_name
+
+case "${container_name:-unknown}" in
+  some-name-dev)
+    # commands here
+  ;;
+  some-name-prod)
+    # commands here
+  ;;
+  *)
+    # commands here
+  ;;
+esac
+
+case "${profile_name:-unknown}" in
+  some-name-dev)
+    # commands here
+  ;;
+  some-name-prod)
+    # commands here
+  ;;
+  *)
+    # commands here
+  ;;
+esac

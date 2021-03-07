@@ -1,0 +1,151 @@
+---
+netdata:
+  hostname: custom-hostname
+  stream:
+    enabled: true
+    destination: netdata-master
+    api-key: 11111111-2222-3333-4444-555555555555
+monit:
+  start: true
+  hostname: my-fqdn
+  mailserver: mailq-fqdn-here
+  set-alert: "mailbox@somedomain.tld"
+  start-delay: 120
+  enable:
+    - nginx
+    - phpfpm
+  disable:
+    - cron
+    - sshd
+postfix:
+  myhostname: 'myserver.somedomain.tld'
+  mynetworks: '127.0.0.1 10.0.0.0/16 ::1 fd00::/8'
+  relayhost: 'my-relay.somedomain.tld'
+  inet-interfaces: 'all'
+  inet-protocols: 'all'
+  cron-subject-hostname: 'custom-hostname'
+ssmtp:
+  root: postmaster
+  mailhub: mail-relay
+  rewrite-domain: container.tld
+  hostname: container.tld
+  from-line-override: false
+  revaliases:
+    - local_account1:outgoing_address1:mailhub
+    - root:your_login@your.domain:mailhub.your.domain[:port]
+nginx:
+  stat-servername: somedomain.tld
+  enable-vhosts:
+    - some-vhost
+    - another-vhost
+  disable-vhosts:
+    - some-vhost
+    - another-vhost
+php-fpm:
+  enable-pools:
+    - some-pool
+    - another-pool
+  disable-pools:
+    - some-pool
+    - another-pool
+  enable-mods:
+    fpm:
+      - custom.ini
+    cli:
+      - custom.ini
+  disable-mods:
+    fpm:
+      - 35-custom-unwanted.ini
+    cli:
+      - 35-custom-unwanted.ini
+apache:
+  stat-servername: somedomain.tld
+  enable-vhosts:
+    - some-vhost
+    - another-vhost
+  disable-vhosts:
+    - some-vhost
+    - another-vhost
+cron:
+  someuser:
+    mailto: mailbox@somedomain.tld
+  root:
+    path: /bin:/sbin:/some/dir
+    shell: /bin/bash
+  system:
+    general:
+      enable:
+        - wanted_file
+      disable:
+        - unwanted_file
+    hourly:
+      enable:
+        - wanted_file
+      disable:
+        - unwanted_file
+    daily:
+      enable:
+        - wanted_file
+      disable:
+        - unwanted_file
+    weekly:
+      enable:
+        - wanted_file
+      disable:
+        - unwanted_file
+    monthly:
+      enable:
+        - wanted_file
+      disable:
+        - unwanted_file
+ssh:
+  authorized-keys:
+    someuser: /path/to/template-with-keys
+    root: /path/to/file-with-trusted-keys
+upstart:
+  disable:
+    - unused-upstart-service
+    - unused-sysv-service
+  enable:
+    - needed-upstart-service
+    - needed-sysv-service
+systemd:
+  disable:
+    - unused-unit
+    - unused-sysv-service
+  enable:
+    - needed-unit
+    - needed-sysv-service
+hlreport:
+  report_dir: /var/www/hlreports/%Y/%m/%d/
+  report_mysql: 1
+  report_nginx: 1
+  nginx_status: http://localhost/nginx_status
+  report_apache: 1
+  apache_status: http://localhost/server-status
+  report_containers: 0
+  procs_tree: 1
+  mysql_clientcfg_file: /root/.my.cnf
+mysql:
+  enable-cfg:
+    - wanted-config.cnf
+    - wanted-config2.cnf
+  disable-cfg:
+    - unwanted-config.cnf
+users:
+  lock:
+    - unwanted-user
+    - unwanted-user2
+  unlock:
+    - wanted-user
+testinfra:
+  delay: 60
+consul:
+  main:
+    node_name: test-node_name
+    datacenter: test-datacenter
+    encrypt: test-key
+    advertise_addr: 1.2.3.4
+  server:
+    server: true
+    encrypt: test-key
