@@ -38,6 +38,10 @@ There’re install/update scripts in the repository. Command for installation (d
 curl -s https://oss.help/scripts/backup/backup-functions/install.sh | bash
 ```
 
+### Useful
+
+As a library, deploy-functions is often used with [LXHelper](https://github.com/OSSHelp/lxhelper), but it's still possible to use it without LXHelper.
+
 ## FAQ
 
 ### Log
