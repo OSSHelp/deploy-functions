@@ -1,6 +1,6 @@
 # deploy-functions
 
-[![Build Status](https://drone.osshelp.ru/api/badges/ansible/deploy-functions/status.svg)](https://drone.osshelp.ru/ansible/deploy-functions)
+[![Build Status](https://drone.osshelp.ru/api/badges/OSSHelp/deploy-functions/status.svg)](https://drone.osshelp.ru/OSSHelp/deploy-functions)
 
 ## About
 
