@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2054,SC2015,SC2016,SC2034,SC2206,SC1001,SC2191,SC2128,SC2207
 
-declare -r df_ver=1.15
+declare -r df_ver=1.17
 
 yq_cmd=$(command -v yq); declare -r yq_cmd
 jq_cmd=$(command -v jq); declare -r jq_cmd
@@ -390,17 +390,28 @@ function setup_netdata() {
 }
 
 function setup_ssmtp() {
-  key_exists_in_current_yml "ssmtp" && {
     local -r ssmtp_main_cfg='/etc/ssmtp/ssmtp.conf'
     local -r ssmtp_aliases_file='/etc/ssmtp/revaliases'
 
-    current_config_file="${ssmtp_main_cfg}"
     separator="="
+    current_config_file="${ssmtp_main_cfg}"
+    ssmtp_hostname=$(get_value 'ssmtp.hostname' "${yml_current}" "$(hostname -f)")
 
+    grep -qP "^\s*hostname\s*" "${current_config_file}" && local param_found=1
+
+    test -n "${param_found}" && {
+      show_notice "Modifying param \"hostname\" in ${current_config_file}"
+      sed -r "s|^(\s*hostname).+|\1${separator}${ssmtp_hostname/&/\\&}|" -i "${current_config_file}"
+    }
+    test -n "${param_found}" || {
+      show_notice "Adding param \"hostname\" to ${current_config_file}"
+      echo "hostname${separator}${ssmtp_hostname}" >> "${current_config_file}"
+    }
+
+  key_exists_in_current_yml "ssmtp" && {
     update_conf_parameter 'root'             'ssmtp.root'
     update_conf_parameter 'mailhub'          'ssmtp.mailhub'
     update_conf_parameter 'rewriteDomain'    'ssmtp.rewrite-domain'
-    update_conf_parameter 'hostname'         'ssmtp.hostname'
     update_conf_parameter 'FromLineOverride' 'ssmtp.from-line-override' '[true]=YES [false]=NO'
 
     test -f "${ssmtp_aliases_file}" && {
@@ -529,7 +540,7 @@ function setup_phpfpm () {
             test -d "${storage_dir}" || mkdir -p "${storage_dir}"
             mv -vf "${phpfpm_pool_d[0]}/${pool}.conf" "${storage_dir}/${pool}.conf"
           }
-      done
+        done
     }
     #manage mods
     for section in $(${yq_cmd} r "${yml_current}" 'php-fpm.enable-mods' | sed -e "/^\s/d;s/://"); do
@@ -581,13 +592,26 @@ function setup_apache() {
 }
 
 function setup_postfix() {
-  key_exists_in_current_yml "postfix" && {
-    local -r postfix_main_cfg='/etc/postfix/main.cf'
-    test -f "${postfix_main_cfg}" && {
-      separator=" = "
-      current_config_file="${postfix_main_cfg}"
+  local -r postfix_main_cfg='/etc/postfix/main.cf'
+  test -f "${postfix_main_cfg}" && {
 
-      update_conf_parameter 'myhostname'        'postfix.myhostname'
+    separator=" = "
+    current_config_file="${postfix_main_cfg}"
+    postfix_myhostname=$(get_value 'postfix.myhostname' "${yml_current}" "$(hostname -f)")
+
+    grep -qP "^\s*${option}\s*" "${current_config_file}" && local param_found=1
+
+    test -n "${param_found}" && {
+      show_notice "Modifying param \"myhostname\" in ${current_config_file}"
+      sed -r "s|^(\s*myhostname).+|\1${separator}${postfix_myhostname/&/\\&}|" -i "${current_config_file}"
+    }
+    test -n "${param_found}" || {
+      show_notice "Adding param \"myhostname\" to ${current_config_file}"
+      echo "myhostname${separator}${postfix_myhostname}" >> "${current_config_file}"
+    }
+
+
+    key_exists_in_current_yml "postfix" && {
       update_conf_parameter 'mynetworks'        'postfix.mynetworks'
       update_conf_parameter 'relayhost'         'postfix.relayhost'
       update_conf_parameter 'inet_interfaces'   'postfix.inet_interfaces'
@@ -782,8 +806,10 @@ function declare_profile_name() {
 }
 
 function setup_consul() {
-  local -r consul_main_cfg='/etc/consul.d/consul.json'
-  local -r consul_srv_cfg='/etc/consul.d/server.json'
+  local -r consul_cfg_dir='/etc/consul.d'
+  local -r consul_storage_dir="${consul_cfg_dir}/disabled"
+  local -r consul_main_cfg="${consul_cfg_dir}/consul.json"
+  local -r consul_srv_cfg="${consul_cfg_dir}/server.json"
   key_exists_in_current_yml "consul" && {
     test -f "${consul_main_cfg}" && {
       current_config_file="${consul_main_cfg}"
@@ -805,6 +831,44 @@ function setup_consul() {
       update_json_parameter 'addresses' 'consul.server.addresses' 'dict'
       update_json_parameter 'ui' 'consul.server.ui' 'bool'
       update_json_parameter 'bootstrap' 'consul.server.bootstrap' 'bool'
+    }
+
+    #enable services
+    test -d "${consul_storage_dir}" && {
+      for service in $(get_list_items 'consul.enable-services' "${yml_current}"); do
+        test -f "${consul_storage_dir}/${service}.json" && \
+          cp -vf "${consul_storage_dir}/${service}.json" "${consul_cfg_dir}/${service}.json"
+      done
+    }
+
+    #disable services
+    for service in $(get_list_items 'consul.disable-services' "${yml_current}"); do
+      test -f "${consul_cfg_dir}/${service}.json" && {
+        test -d "${consul_storage_dir}" || mkdir -p "${consul_storage_dir}"
+        mv -vf "${consul_cfg_dir}/${service}.json" "${consul_storage_dir}/${service}.json"
+      }
+    done
+  }
+}
+
+function setup_hostname() {
+  local -r system_hostname_file='/etc/hostname'
+  local -r system_hosts_file='/etc/hosts'
+  local -r key_name='hostname'
+  local hostname_invalid=0
+
+  key_exists_in_current_yml "${key_name}" && {
+
+    old_hostname=$(hostname -f)
+    new_hostname=$(get_value "${key_name}" "${yml_current}")
+    hostname "${new_hostname}" &>/dev/null || {
+      hostname_invalid=1
+      show_error "Provided hostname is invalid"
+    }
+    test "${hostname_invalid}" -ne 1 && {
+      show_notice "Modifying system hostname"
+      sed -ri "s@(\s+)?${old_hostname}(\s+|$)?@\1${new_hostname}\2@g" "${system_hosts_file}"
+      echo "${new_hostname}" > "${system_hostname_file}"
     }
   }
 }

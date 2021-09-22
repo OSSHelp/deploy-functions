@@ -149,3 +149,9 @@ consul:
   server:
     server: true
     encrypt: test-key
+  disable-services:
+    - service1
+    - service2
+  enable-services:
+    - service3
+    - service4
