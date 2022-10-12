@@ -5,7 +5,7 @@
 # manage output for interactive and non-interactive modes
 # shellcheck disable=SC1090
 
-df_ver=1.17
+df_ver=1.18
 lib_path='/usr/local/include/osshelp/deploy-functions.sh'
 log_file='/var/log/default-setup.log'
 local_ds='/usr/local/osshelp/default-setup.local'
@@ -37,6 +37,7 @@ function main() {
   setup_netdata
   setup_hlreport
   setup_consul
+  setup_promtail
   declare_profile_name
   test -r "${local_ds}" && . "${local_ds}"
 }

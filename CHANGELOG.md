@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.18
+
+* Added Promtail profiles support
+
 ## v1.13
 
 * Added default logs generation opportunity for Focal and Bionic (as it was made for Xenial and Trusty)

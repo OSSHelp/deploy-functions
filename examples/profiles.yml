@@ -155,3 +155,15 @@ consul:
   enable-services:
     - service3
     - service4
+promtail:
+  conffile: "/custom/path"
+  tenant-id: 11111111-2222-3333-4444-555555555555
+  limits:
+    readline_rate_enabled: true
+    readline_rate_drop: true
+    readline_rate: 100
+    readline_burst: 100
+  labels:
+    env: some-env
+    source: some-source
+    instance: some-instance
