@@ -5,7 +5,7 @@ umask 0077
 export LANG=C
 export LC_ALL=C
 
-df_ver=1.18
+df_ver=1.19
 silent=no
 tmpdir="${TEMP:=/tmp}"
 

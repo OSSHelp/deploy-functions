@@ -5,7 +5,7 @@
 # manage output for interactive and non-interactive modes
 # shellcheck disable=SC1090
 
-df_ver=1.18
+df_ver=1.19
 lib_path='/usr/local/include/osshelp/deploy-functions.sh'
 log_file='/var/log/default-setup.log'
 local_ds='/usr/local/osshelp/default-setup.local'

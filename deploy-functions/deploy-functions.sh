@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2054,SC2015,SC2016,SC2034,SC2206,SC1001,SC2191,SC2128,SC2207
 
-declare -r df_ver=1.18
+declare -r df_ver=1.19
 
 yq_cmd=$(command -v yq); declare -r yq_cmd
 jq_cmd=$(command -v jq); declare -r jq_cmd
@@ -878,36 +878,30 @@ function setup_promtail() {
   key_exists_in_current_yml "promtail.conffile" && {
     promtail_conf=$(get_value 'promtail.conffile' "${yml_current}")
   }
+
+  # manage instance/source labels
+  key_exists_in_current_yml "promtail.labels.instance" && \
+    promtail_instance=$(get_value 'promtail.labels.instance' "${yml_current}") || \
+      test -n "${promtail_instance}" || promtail_instance="${server_name}"
+  key_exists_in_current_yml "promtail.labels.source" && \
+    promtail_source=$(get_value 'promtail.labels.source' "${yml_current}") || \
+      test -n "${promtail_source}" || promtail_source="${container_name}"
+  sed -e "s/\(instance:\).*/\1 ${promtail_instance}/g" -i "${promtail_conf}"
+  sed -e "s/\(source:\).*/\1 ${promtail_source}/g" -i "${promtail_conf}"
+
+  key_exists_in_current_yml "promtail.labels.env" && {
+    promtail_env=$(get_value 'promtail.labels.env' "${yml_current}" "production")
+    sed -e "s/\(env:\).*/\1 ${promtail_env}/g" -i "${promtail_conf}"
+  }
   key_exists_in_current_yml "promtail.tenant-id" && {
     promtail_tenantid=$(get_value 'promtail.tenant-id' "${yml_current}")
     sed -e "s/\(tenant_id:\).*/\1 ${promtail_tenantid}/" -i "${promtail_conf}"
   }
-  key_exists_in_current_yml "promtail.labels.env" && {
-    promtail_env=$(get_value 'promtail.labels.env' "${yml_current}")
-    sed -e "s/\(env:\).*/\1 ${promtail_env}/g" -i "${promtail_conf}"
-  }
-  key_exists_in_current_yml "promtail.labels.source" && {
-    promtail_source=$(get_value 'promtail.labels.source' "${yml_current}")
-    sed -e "s/\(source:\).*/\1 ${promtail_source}/g" -i "${promtail_conf}"
-  }
-  key_exists_in_current_yml "promtail.labels.instance" && {
-    promtail_instance=$(get_value 'promtail.labels.instance' "${yml_current}")
-    sed -e "s/\(instance:\).*/\1 ${promtail_instance}/g" -i "${promtail_conf}"
-  }
-  key_exists_in_current_yml "promtail.limits.readline_rate_enabled" && {
-    readline_rate_enabled=$(get_value 'promtail.limits.readline_rate_enabled' "${yml_current}")
-    sed -e "s/\(readline_rate_enabled:\).*/\1 ${readline_rate_enabled}/" -i "${promtail_conf}"
-  }
-  key_exists_in_current_yml "promtail.limits.readline_rate_drop" && {
-    readline_rate_drop=$(get_value 'promtail.limits.readline_rate_drop' "${yml_current}")
-    sed -e "s/\(readline_rate_drop:\).*/\1 ${readline_rate_drop}/" -i "${promtail_conf}"
-  }
-  key_exists_in_current_yml "promtail.limits.readline_rate" && {
-    readline_rate=$(get_value 'promtail.limits.readline_rate' "${yml_current}")
-    sed -e "s/\(readline_rate:\).*/\1 ${readline_rate}/" -i "${promtail_conf}"
-  }
-  key_exists_in_current_yml "promtail.limits.readline_burst" && {
-    readline_burst=$(get_value 'promtail.limits.readline_burst' "${yml_current}")
-    sed -e "s/\(readline_burst:\).*/\1 ${readline_burst}/" -i "${promtail_conf}"
-  }
+
+  # manage limits
+  for param in $(get_keys "promtail.limits" "${yml_current}"); do
+    value="$(get_value "promtail.limits.${param}" "${yml_current}")"
+    yq w -i "${promtail_conf}" "limits_config.${param}" "${value}"
+  done
+
 }

@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.19
+
+* Auto replacement of instance/source labels for Promtail
+* Improved Promtail limits_config section generation (any future param changes support)
+
 ## v1.18
 
 * Added Promtail profiles support
