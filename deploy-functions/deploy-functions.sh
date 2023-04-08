@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2054,SC2015,SC2016,SC2034,SC2206,SC1001,SC2191,SC2128,SC2207
 
-declare -r df_ver=1.19
+declare -r df_ver=1.20
 
 yq_cmd=$(command -v yq); declare -r yq_cmd
 jq_cmd=$(command -v jq); declare -r jq_cmd
@@ -882,12 +882,12 @@ function setup_promtail() {
   # manage instance/source labels
   key_exists_in_current_yml "promtail.labels.instance" && \
     promtail_instance=$(get_value 'promtail.labels.instance' "${yml_current}") || \
-      test -n "${promtail_instance}" || promtail_instance="${server_name}"
+      test -n "${promtail_instance}" || promtail_instance="${container_name}"
   key_exists_in_current_yml "promtail.labels.source" && \
     promtail_source=$(get_value 'promtail.labels.source' "${yml_current}") || \
       test -n "${promtail_source}" || promtail_source="${container_name}"
   sed -e "s/\(instance:\).*/\1 ${promtail_instance}/g" -i "${promtail_conf}"
-  sed -e "s/\(source:\).*/\1 ${promtail_source}/g" -i "${promtail_conf}"
+  sed -e "s/\(source:\).*/\1 ${promtail_instance}/g" -i "${promtail_conf}"
 
   key_exists_in_current_yml "promtail.labels.env" && {
     promtail_env=$(get_value 'promtail.labels.env' "${yml_current}" "production")

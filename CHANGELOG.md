@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.20
+
+* Container name is now used as the default value for Promtail instance/source labels
+
 ## v1.19
 
 * Auto replacement of instance/source labels for Promtail
