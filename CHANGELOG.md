@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.22
+
+* Server name is now used as the default value for Promtail instance labels
+* Updated Promtail's default config name
+
 ## v1.20
 
 * Container name is now used as the default value for Promtail instance/source labels
