@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.23
+
+* Fixed a bug with `source` label edition by default-setup
+
 ## v1.22
 
 * Server name is now used as the default value for Promtail instance labels
