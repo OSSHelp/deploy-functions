@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.24
+
+* Fixed a bug with source editing for expression in match, etc
+* Added source_exclude variable to promtail profile
+
 ## v1.23
 
 * Fixed a bug with `source` label edition by default-setup

@@ -158,6 +158,7 @@ consul:
 promtail:
   conffile: "/custom/path"
   tenant-id: 11111111-2222-3333-4444-555555555555
+  source_exclude: '\(filename\|something\)'
   limits:
     readline_rate_enabled: true
     readline_rate_drop: true
