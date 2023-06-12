@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2054,SC2015,SC2016,SC2034,SC2206,SC1001,SC2191,SC2128,SC2207
 
-declare -r df_ver=1.24
+declare -r df_ver=1.25
 
 yq_cmd=$(command -v yq); declare -r yq_cmd
 jq_cmd=$(command -v jq); declare -r jq_cmd
@@ -886,6 +886,7 @@ function setup_promtail() {
   key_exists_in_current_yml "promtail.labels.source" && \
     promtail_source=$(get_value 'promtail.labels.source' "${yml_current}") || \
       test -n "${promtail_source}" || promtail_source="${container_name}"
+  key_exists_in_current_yml "promtail.source_exclude" && \
     promtail_source_exclude=$(get_value 'promtail.source_exclude' "${yml_current}") || \
       test -n "${promtail_source_exclude}" || promtail_source_exclude='filename'
   sed -e "s/\(instance:\).*/\1 ${promtail_instance}/g" -i "${promtail_conf}"

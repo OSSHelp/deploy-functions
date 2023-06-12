@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.25
+
+* fixed a bug with source label generic value not being replaced with INSTANCE_ID value in Promtail cfg
+
 ## v1.24
 
 * Fixed a bug with source editing for expression in match, etc
